@@ -17,16 +17,12 @@ define([
       settings = _settings_;
       deferred = $q.defer();
 
-      spyOn(FormatCurrencyService, 'removeCharacters').and.callFake(function () {
+      spyOn(FormatCurrencyService, 'format').and.callFake(function () {
         deferred = $q.defer();
-        deferred.resolve(45000);
-
-        return deferred.promise;
-      });
-
-      spyOn(FormatCurrencyService, 'addSeperators').and.callFake(function () {
-        deferred = $q.defer();
-        deferred.resolve('45,000');
+        deferred.resolve({
+          formatted: "24'456'654,88",
+          unformatted: '24456654.88'
+        });
 
         return deferred.promise;
       });
@@ -41,7 +37,7 @@ define([
       });
 
       it('formats annual pay amount', function () {
-        expect($scope.entity.pay.pay_annualized_est).toBe('45,000');
+        expect($scope.entity.pay.pay_annualized_est).toBe("24'456'654,88");
       });
     });
 
@@ -52,7 +48,7 @@ define([
       });
 
       it('formats benefits per cycle pay', function () {
-        expect($scope.entity.pay.benefits_per_cycle_net).toBe('45,000');
+        expect($scope.entity.pay.benefits_per_cycle_net).toBe("24'456'654,88");
       });
     });
 
@@ -63,7 +59,7 @@ define([
       });
 
       it('formats pay per cycle gross', function () {
-        expect($scope.entity.pay.pay_per_cycle_gross).toBe('45,000');
+        expect($scope.entity.pay.pay_per_cycle_gross).toBe("24'456'654,88");
       });
     });
 
@@ -74,7 +70,7 @@ define([
       });
 
       it('formats the pay per cycle', function () {
-        expect($scope.entity.pay.pay_per_cycle_net).toBe('45,000');
+        expect($scope.entity.pay.pay_per_cycle_net).toBe("24'456'654,88");
       });
     });
 
@@ -93,7 +89,7 @@ define([
           'pay_annualized_est': 0,
           'annual_benefits': 0,
           'annual_deductions': 0,
-          'pay_amount': 45000
+          'pay_amount': 0
         }
       };
       $controller('FormPayCtrl', {

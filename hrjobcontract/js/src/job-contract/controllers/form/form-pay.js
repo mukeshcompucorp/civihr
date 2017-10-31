@@ -5,8 +5,8 @@ define([
 ], function (controllers) {
   'use strict';
 
-  controllers.controller('FormPayCtrl', ['$scope', '$filter', 'settings', 'FormatCurrencyService', '$log',
-    function ($scope, $filter, settings, FormatCurrencyService, $log) {
+  controllers.controller('FormPayCtrl', ['$log', '$filter', '$scope', 'settings', 'FormatCurrencyService',
+    function ($log, $filter, $scope, settings, FormatCurrencyService) {
       $log.debug('Controller: FormPayCtrl');
 
       var calcBenefitsPerCycleNet = 0;
@@ -41,17 +41,14 @@ define([
       $scope.benefits_per_cycle_net = 0;
       $scope.deductions_per_cycle = (0).toFixed(2);
 
-      // Format the pay amount to be displayed in the pay amount field
-      // as per the settings
-      $scope.formatPayAmount = function () {
-        FormatCurrencyService.removeCharacters(entityPay.pay_amount).then(function (calculableAmount) {
-          return calculableAmount;
-        }).then(function (calculableAmount) {
-          FormatCurrencyService.addSeperators(calculableAmount).then(function (formattedAmount) {
-            entityPay.pay_amount = formattedAmount;
-          });
+      /**
+       * Display formatted pay amount in field as per the settings
+       */
+      function formatPayAmount () {
+        FormatCurrencyService.format(entityPay.pay_amount).then(function (amount) {
+          entityPay.pay_amount = amount.formatted;
         });
-      };
+      }
 
       function getCycles () {
         var cycles = 1;
@@ -94,13 +91,9 @@ define([
 
       $scope.calcAnnualPayEst = function () {
         if (+entityPay.is_paid) {
-          FormatCurrencyService.removeCharacters(entityPay.pay_amount).then(function (calculabeAmount) {
-            calcPayAnnualizedEst = ((+calculabeAmount) * (workPerYear[entityPay.pay_unit] || 0)).toFixed(2);
-            return calcPayAnnualizedEst;
-          }).then(function (calcPayAnnualizedEst) {
-            FormatCurrencyService.addSeperators(calcPayAnnualizedEst).then(function (formattedAmount) {
-              entityPay.pay_annualized_est = formattedAmount;
-            });
+          FormatCurrencyService.format(entityPay.pay_amount).then(function (amount) {
+            calcPayAnnualizedEst = ((+amount.unformatted) * (workPerYear[entityPay.pay_unit] || 0)).toFixed(2);
+            entityPay.pay_annualized_est = amount.formatted;
           });
         }
       };
@@ -126,8 +119,8 @@ define([
         if (+entityPay.is_paid) {
           calcBenefitsPerCycleNet = ($scope.benefits_per_cycle - $scope.deductions_per_cycle);
 
-          FormatCurrencyService.addSeperators(calcBenefitsPerCycleNet).then(function (formattedAmount) {
-            entityPay.benefits_per_cycle_net = formattedAmount;
+          FormatCurrencyService.format(calcBenefitsPerCycleNet).then(function (amount) {
+            entityPay.benefits_per_cycle_net = amount.formatted;
           });
         }
       };
@@ -153,8 +146,8 @@ define([
         if (+entityPay.is_paid) {
           calcPayPerCycleGross = (calcPayAnnualizedEst / getCycles()).toFixed(2);
 
-          FormatCurrencyService.addSeperators(calcPayPerCycleGross).then(function (formattedAmount) {
-            entityPay.pay_per_cycle_gross = formattedAmount;
+          FormatCurrencyService.format(calcPayPerCycleGross).then(function (amount) {
+            entityPay.pay_per_cycle_gross = amount.formatted;
           });
         }
       };
@@ -162,8 +155,8 @@ define([
       $scope.calcPayPerCycleNet = function () {
         if (+entityPay.is_paid) {
           var calcPayPerCycleNet = (+calcPayPerCycleGross + +calcBenefitsPerCycleNet).toFixed(2);
-          FormatCurrencyService.addSeperators(calcPayPerCycleNet).then(function (formattedAmount) {
-            entityPay.pay_per_cycle_net = formattedAmount;
+          FormatCurrencyService.format(calcPayPerCycleNet).then(function (amount) {
+            entityPay.pay_per_cycle_net = amount.formatted;
           });
         }
       };
@@ -197,7 +190,7 @@ define([
 
       $scope.$watch('entity.pay.pay_amount', function () {
         $scope.calcAnnualPayEst();
-        $scope.formatPayAmount();
+        formatPayAmount();
       });
       $scope.$watch('entity.pay.pay_unit', $scope.calcAnnualPayEst);
       $scope.$watch('entity.pay.pay_annualized_est', function () {
