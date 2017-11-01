@@ -92,7 +92,7 @@ define([
       $scope.calcAnnualPayEst = function () {
         if (+entityPay.is_paid) {
           FormatCurrencyService.format(entityPay.pay_amount).then(function (amount) {
-            calcPayAnnualizedEst = ((+amount.unformatted) * (workPerYear[entityPay.pay_unit] || 0)).toFixed(2);
+            calcPayAnnualizedEst = ((+amount.parsed) * (workPerYear[entityPay.pay_unit] || 0)).toFixed(2);
             entityPay.pay_annualized_est = amount.formatted;
           });
         }
